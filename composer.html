@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Composer</title>
+
+  <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+
+
+<style id="jsbin-css">
+    /* 
+    CONCEPT 
+    -------
+    Minimise JS computation with CSS3.
+    
+
+    A component architecture aim to bring reusable pieces of codes,
+    from the frontend view this does mean that the component define
+    his reusablabily which is a scope issue to be fixed by css-module
+    and slicing bettwen core and appearances props. 
+
+
+    */
+
+    /* COMPOSER POSITIONS */
+
+    .composer {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
+
+
+    header, footer, .row{
+      line-height: 2rem;
+      padding: 0px 10px
+    }
+
+  
+    .row{
+      /* Labels and inputs management*/
+      display: flex;
+      flex-direction: row;
+    }
+
+      .row label{
+        padding-right: 10px;
+      }
+
+      .row .flex{
+        flex:1; /*fill the space*/
+      }
+
+
+    .editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+
+    .toolbar li{
+      flex:1;
+      cursor: pointer;
+      height:2rem;
+      line-height:2rem;
+      
+    }
+
+    content {
+      flex: 1;
+      width: 100%;
+      max-width: 100%;
+    }
+
+
+    footer {
+      padding: 10px;
+    }
+
+
+    .dynList ul li{
+      cursor: pointer;
+      float:left;
+      margin-right: 5px;
+    }
+
+
+    .attachements{
+       display:inline;
+    }
+
+
+    .attachements button{
+      position:relative
+    }
+
+    .attachements .filesManager{
+      display: none;
+      max-width:200px;
+      padding:10px 5px;
+      position:absolute;
+      bottom:3rem;
+    }
+    
+    .attachements .filesManager li{
+      clear:both;
+    }
+
+    .attachements .filesManager span{
+      text-align:left;
+      white-space:nowrap;  
+    }
+    
+    .attachements .tip{
+        display: none;
+        position: absolute;
+        width: 100%;
+        height:100%;
+        top:0px;
+        left:0px;
+        font-weight: bold;
+        opacity:0;
+        background:#505061;
+        color:#FFF;
+      }
+
+
+     .attachements:hover .tip,
+     .attachements.active .tip{
+        display: block;
+        opacity: 1;
+      }
+
+
+    /** COMPOSER APPEARANCE **/
+
+
+    .composer > *:not(header){
+      border-bottom:1px solid #ccd0dd;
+    }
+
+    header {
+      background: #505061;
+      color: white;
+    }
+
+    label{
+      color:#CCC;
+      font-weight: normal;
+    }
+
+
+    textarea{
+      padding-bottom: 0;
+      width: 100%;
+      height: 100%;
+      padding: 20px 10px;      
+    }
+
+    .toolbar{
+      padding:0; /*overide padding*/
+      text-align: center;
+      background-color: #edeff2;
+      border-color: #ccd0dd;
+      border-style: solid;
+      border-width: 0 0 1px;
+    }
+
+    .toolbar li.separator{
+      background: #ccd0dd;
+      max-width: 1px;
+      min-width: 1px;
+      width: 1px;
+    }
+
+    .toolbar li{
+      color:#333;
+      transition:0.2s ease;
+    }
+
+    .toolbar li:hover{
+        font-size: 1.1rem;
+        background: #505061;
+        color: #FFF;
+        padding: 1px;
+        margin: -1px;
+        z-index: 1
+    }
+
+    .dynList ul li span{
+      color: rgba(0,0,0,0.6);
+      transition:0.2s ease;
+      padding:5px 20px 5px 5px;
+      margin:-5px -20px -5px -5px;
+      border-radius: 2px;
+    }
+    
+    
+    .dynList.inline ul li:not(:hover):not(:nth-last-child(2)) span:after{
+      content: ",";
+      position:absolute;
+    }
+
+    .dynList ul li:hover span{
+
+      position: relative;
+      z-index: 1;
+      color:#FFF;
+      font-style: normal;
+      background: #505061;
+      opacity:.9
+    }
+
+    .attachements{
+      font-size:1rem
+    }
+
+    .attachements strong{
+      color:rgba(0,0,0,0.7);
+    }
+
+    .attachements small{
+      display: none;
+    }
+  
+
+    .attachements .filesManager li span{
+          background:#edeff2;
+          border-radius:2px;
+          padding:2px 6px;
+          margin-bottom:4px   
+    }
+
+
+    footer{
+      background-color: #edeff2;
+      box-shadow:inset 0px 1px 0px rgba(0,0,0,0.1)
+    }
+  
+    
+
+    footer button {
+      background-color: #FFF;
+      border: 1px solid #ccd0dd;
+      border-radius: 2px;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+      box-sizing: border-box;
+      color: #505061;
+      cursor: pointer;
+
+      font-size: .8rem;
+      height: 36px;
+      line-height: 32px;
+      padding: 0px 1rem;
+    }
+
+    footer button:hover{
+        background-color:#505061;
+        border-color:transparent;
+        color:#FFF;
+    }
+
+    footer button.primary{
+      background-color: #9397cd;
+      border-color: #9397cd;
+      color: #FFF;
+      font-weight: bold
+    }
+
+
+    @media (min-width:500px) {
+      
+      /* Responsive attachements infos */
+      .attachements small{
+        display: inline;
+        background: rgba(0,0,0,0.1);
+        color: rgba(0,0,0,0.7);
+        border-radius: 4px;
+        padding:1px 3px;
+        border-color: transparent;
+        box-shadow: inset 0px 1px 1px rgba(0,0,0,0.1)
+      }
+
+    }
+
+
+
+    /** CONTAINERs SCOPE **/
+
+    html, body{
+      height: 100%;
+    }
+
+    body, input, textarea{
+      font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+      font-size: 14px;
+      color: #333
+    }
+    
+    /* 
+    section is like the component container 
+    
+    */
+    section{
+        
+        width: 100%;
+        max-width: 500px;
+        height: 90%;
+
+
+        /* POSITION */
+        position: absolute;
+        right:0px;
+        bottom:0px;
+
+
+        /* STYLES */
+        display: inline-block;
+        overflow: hidden;
+        background:#FFF;
+
+    }
+
+    @media (min-width:500px){
+      section {
+        right:10px;
+        bottom:10px;
+        border-radius: 2px;
+        box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.33), 
+                    0 0 2px rgba(0, 0, 0, 0.33);
+      }
+    }
+
+
+
+    /* RESETS */
+
+    ul{
+      margin:0px;
+      padding:0px;
+      list-style: none;
+    }
+
+    input{
+      box-sizing: border-box;
+      display: inline-block;
+      border:none;
+      margin: 0;
+      outline: 0 none;
+    }
+
+    textarea{
+      border:0;
+      resize: none;
+    }
+
+</style>
+</head>
+<body>
+
+  <section>
+
+    <!-- CSS MODULE to be implemented -->
+    <div class="composer">
+      <header>New message</header>
+      <div class="row from">
+          <label for="from">From</label>
+          <input class="flex" id="from" type="text" value="alice@protonmail.com" />
+      </div>
+      <div class="row to dynList inline">
+        <label for="to">To</label> 
+        <ul>
+          <li><span>bob@protonmail.com</span></li>
+          <li><span>carol@protonmail.com</span></li>
+          <li><input class="flex" id="to" type="text" placeholder="..." /></li>
+        </ul>
+
+      </div>
+      <input type="text" class="row subject" placeholder="Subject"  />
+      
+      <div class="editor">
+
+       <ul class="row toolbar"> 
+          <li class="fa fa-bold"></li>
+          <li class="fa fa-italic"></li>
+          <li class="fa fa-underline"></li>
+          <li class="separator"></li>
+          <li class="fa fa-list-ul"></li>
+          <li class="fa fa-list-ol"></li>
+          <li class="separator"></li>
+          <li class="fa fa-align-left"></li>
+          <li class="fa fa-align-center"></li>
+          <li class="fa fa-align-right"></li>
+          <li class="separator"></li>
+          <li class="fa fa-link"></li>
+          <li class="fa fa-image"></li>
+      </ul>
+    
+   
+        
+        <content>
+            <!-- IFRAME SIMULATION -->
+            <textarea class="signature">Sent from ProtonMail, Swiss-based encrypted email.</textarea> 
+        </content>
+      </div>
+
+      <footer> 
+
+        
+        <div class="pull-left">
+          <div class="attachements">
+            <button>            
+              <i class="fa fa-paperclip"></i>
+              <strong>2 files</strong> 
+              <small>298KB</small>
+              <span class="tip">Add a file...</span>
+            </button>
+            <div class="filesManager dynList">
+              <ul>
+                <li>
+                  <span>
+                    <i class="fa fa-file-pdf-o "></i> 
+                    Emerging Payment Systems.pdf
+                  </span>
+                </li>
+                <li>
+                  <span>
+                    <i class="fa fa-file-excel-o"></i> 
+                    Budget.xls
+                  </span>
+                </li>
+                <li>
+                  <span>
+                    <i class="fa fa-film "></i> 
+                    Clip.mov
+                  </span>
+                </li>
+              </ul>
+            </div> 
+          </div>    
+          
+          
+          <button>
+            <i class="fa fa-lock"></i>
+          </button>
+          <button>
+            <i class="fa fa-clock-o"></i>
+          </button>
+        </div>
+        <div class="pull-right">
+          <button>
+            <i class="fa fa-trash-o"></i>
+          </button>
+          <button>
+            <i class="fa fa-floppy-o"></i>
+          </button>
+          <button class="primary">SEND</button>  
+        </div>        
+      </footer>
+      
+    </div>
+  </section>  
+
+
+
+<script id="jsbin-javascript">
+$(".attachements").on("mouseenter",function(){
+    
+  $(".filesManager").show();
+  
+}).on("mouseleave",function(){
+    
+  $(".filesManager").hide();
+  
+})
+</script>
+</body>
+</html>
